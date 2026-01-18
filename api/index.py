@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 import json
 import pandas as pd
 
@@ -13,6 +14,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Handle preflight OPTIONS
+@app.options("/{path:path}")
+def options_handler(path: str):
+    return Response(status_code=200)
 
 # Load telemetry data
 with open("q-vercel-latency.json", "r") as f:
@@ -37,4 +43,5 @@ def metrics(payload: dict):
             "avg_uptime": round(r["uptime_pct"].mean(), 2),
             "breaches": int((r["latency_ms"] > threshold).sum())
         }
+
     return response
